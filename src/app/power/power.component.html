@@ -1,0 +1,9 @@
+<div *ngIf="PlotlyData">
+  <plotlychart #targetChart
+    [data]="PlotlyData"  
+    [layout]="PlotlyLayout" 
+    [options]="PlotlyOptions" 
+    [displayRawData]="DisplayData"
+    (replaying)="isReplaying($event)">
+  </plotlychart>
+</div>
