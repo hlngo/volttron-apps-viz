@@ -1,0 +1,12 @@
+<div>
+  <app-fix-target [id]="'coolingPlotId'" [viewDate]="ViewDate" [func]="Func" [secureToken]="SecureToken" [season]="'Cooling'"></app-fix-target>
+  <div style="text-align:center">
+    <h1>
+      {{title1}}
+    </h1>
+    <h1 *ngIf="title2">
+      {{title2}}
+    </h1> 
+  </div>
+  <app-fix-target [id]="'heatingPlotId'" [viewDate]="ViewDate" [func]="Func" [secureToken]="SecureToken" [season]="'Heating'"></app-fix-target>
+</div>

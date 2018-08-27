@@ -1,8 +1,17 @@
 <!--The whole content below can be removed with the new code.-->
 <div style="text-align:center">
   <h1>
-    {{title}}
+    {{title1}}
   </h1>
+  <h1 *ngIf="title2">
+    {{title2}}
+  </h1> 
 </div>
-
-<app-power>Loading...</app-power>
+<router-outlet></router-outlet>
+<div>
+  <hr/>
+  <a routerLink="/ilc" routerLinkActive="active">ILC Realtime</a>
+  <hr/>
+  <a routerLink="/demo" routerLinkActive="active">Past Experiments</a>
+  <hr/>
+</div>

@@ -14,16 +14,19 @@ import { PlotlyComponent } from '../plotly/plotly.component'
 import * as moment from 'moment';
 
 @Component({
-  selector: 'app-power',
-  templateUrl: './power.component.html',
-  styleUrls: ['./power.component.css'],
+  selector: 'app-fix-target',
+  templateUrl: './fix-target.component.html',
+  styleUrls: ['./fix-target.component.css'],
   providers: [ PowerDataService, AuthenticationService ] 
 })
-export class PowerComponent implements OnInit, OnDestroy {
+export class FixTargetComponent implements OnInit {
   @Input() secureToken: any;
   @Input() viewDate: string;
   @Input() func: string;
-  @ViewChild('targetChart') 
+  @Input() season: string;
+  @Input() id: string;
+
+  @ViewChild('fixTargetChart') 
   private targetChart: PlotlyComponent;
 
   //public PowerData: PowerData;
@@ -48,7 +51,7 @@ export class PowerComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.PlotlyId = 'power_plot';
+    this.PlotlyId = this.id;
     this.PlotlyLayout = {
       title: "",
       height: 600,
@@ -62,7 +65,7 @@ export class PowerComponent implements OnInit, OnDestroy {
       },
       xaxis: {
         title: '<b>Time</b>',
-        // tickformat: "%-I %p",
+        tickformat: "%-I %p",
         nticks: 30,
         titlefont: {
           size: 16
@@ -83,7 +86,7 @@ export class PowerComponent implements OnInit, OnDestroy {
         }
       },
       legend: {
-        x: 0.93, 
+        x: 0.9, 
         y: 1,
         font: {
           size: 14
@@ -103,8 +106,8 @@ export class PowerComponent implements OnInit, OnDestroy {
 
     var targetTrace = {
       name: 'Target',
-      x: [],
-      y: [],
+      x:[],
+      y: [147, 147],
       mode: 'lines',
       'line': {
         width: 3
@@ -121,44 +124,23 @@ export class PowerComponent implements OnInit, OnDestroy {
       }
     };
 
-    this.PlotlyData = [ baselineTrace, targetTrace, powerTrace ];
+    this.PlotlyData = [ baselineTrace, targetTrace, powerTrace];
     
     //Initial get
-    this._powerDataService.GetAllBaseline(this.viewDate)
+    this._powerDataService.GetAllPowerWithoutILC(this.viewDate, this.func, this.season)
+      .takeWhile(() => this.alive)
       .subscribe(
         data => this.setNewData(data, 0),
         error => console.log(error.json().error),
-        () => console.log('Get GetAllBaseline completed.'));
+        () => console.log('Get GetAllPowerWithoutILC completed.'));
 
-    // this._powerDataService.GetAllTarget(this.viewDate)
-    //   .subscribe(
-    //     data => this.setNewData(data, 1),
-    //     error => console.log(error.json().error),
-    //     () => console.log('Get GetAllTarget completed.'));
-
-    this._powerDataService.GetAllPower(this.viewDate, this.func)
+    this._powerDataService.GetAllPowerWithILC(this.viewDate, this.func, this.season)
+      .takeWhile(() => this.alive)
       .subscribe(
         data => this.setNewData(data, 2),
         error => console.log(error.json().error),
-        () => console.log('Get GetAllPower completed.'));
+        () => console.log('Get GetAllPowerWithILC completed.'));
 
-    //Timer to pull new dasta
-    // this.timer
-    //   .takeWhile(() => this.alive)
-    //   .subscribe(() => {
-    //     console.log(this.Replaying);
-    //     if (!this.Replaying) {
-    //       this._powerDataService.GetPowerData()
-    //         .subscribe(
-    //           data => this.setNewData(data),
-    //           error => console.log(error),
-    //           () => {
-    //             console.log('Get PowerData...')
-    //             console.log(this.PlotlyData);
-    //             console.log('Get PowerData completed.')
-    //         });
-    //     }
-    //   })
   }
 
 
@@ -179,19 +161,15 @@ export class PowerComponent implements OnInit, OnDestroy {
     let curDateTime = new Date;
     
     for (let d of data) {
-      if (traceIdx == 0) {
-        // Baseline
-        newPlotlyData['x'][0].push(d['ts']);
-        newPlotlyData['y'][0].push(d['value']);
-
-        // Target
-        newPlotlyData['x'][1].push(d['ts']);
-        newPlotlyData['y'][1].push(d['target']);
-      }
-      else if (traceIdx == 2) {
-        // Actual
+      if (traceIdx != 1) {
         newPlotlyData['x'][traceIdx].push(d['ts']);
         newPlotlyData['y'][traceIdx].push(d['value']);
+
+        if (traceIdx == 0) {
+          //x: ['2017-08-10T00:00:00.000000Z','2017-08-11T00:00:00.000000Z'],
+          newPlotlyData['x'][1].push(d['ts']);
+          newPlotlyData['y'][1].push(147);
+        }
       }
       else {
         //Moment parse non-offset string to UTC by default. Set format to parse to local.
@@ -213,4 +191,5 @@ export class PowerComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.alive = false; 
   }
+
 }

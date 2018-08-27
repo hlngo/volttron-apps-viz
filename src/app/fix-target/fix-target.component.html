@@ -1,0 +1,11 @@
+<div *ngIf="PlotlyData">
+    <plotlychart #fixTargetChart
+      [plotId]="PlotlyId"
+      [data]="PlotlyData"  
+      [layout]="PlotlyLayout" 
+      [options]="PlotlyOptions" 
+      [displayRawData]="DisplayData"
+      (replaying)="isReplaying($event)">
+    </plotlychart>
+  </div>
+  

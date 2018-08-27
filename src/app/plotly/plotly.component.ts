@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, AfterViewChecked, AfterContentInit } from '@angular/core';
 
 // 1st way to import native js 
 declare function require(moduleName: string): any;
@@ -10,26 +10,35 @@ var Plotly = require('./plotly.min.js');
   templateUrl: './plotly.component.html',
   styleUrls: ['./plotly.component.css']
 })
-export class PlotlyComponent{
-  
+export class PlotlyComponent implements OnInit{
+  @Input() plotId: string;
   @Input() data: any;
   @Input() layout: any;
   @Input() options: any;
   @Input() displayRawData: boolean;
   @Output() replaying: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  constructor() { } 
-   
-  ngOnInit() {
-    console.log("ngOnInit Plotly Component");
-    console.log(this.data);
-    console.log(this.layout);
+  private plotCreated: boolean = false;
 
-    Plotly.newPlot('myPlotlyDiv', this.data, this.layout, this.options);
+  constructor() { } 
+  setMyPlotId() : string {
+    return this.plotId;
+  }
+  ngOnInit() {
+    //this.options = {displayModeBar: false};
+    //this.options = {displaylogo: false};
+    this.options = {
+      modeBarButtonsToRemove: [
+      'sendDataToCloud', 'lasso2d', 'toggleSpikelines', 'setSpikelineVisibility'      
+    ], displaylogo: false };
   }
  
   public ExtendTraces(newPlotlyData: any, traceArr: any) {
-      Plotly.extendTraces('myPlotlyDiv', newPlotlyData, traceArr);
+    if (!this.plotCreated) {
+      this.plotCreated = true;
+      Plotly.newPlot(this.plotId, this.data, this.layout, this.options);
+    }
+    Plotly.extendTraces(this.plotId, newPlotlyData, traceArr);
   }
 
   onReplay() {
@@ -45,12 +54,15 @@ export class PlotlyComponent{
     //Get traces
     let traceArr = Array.from(Array(this.data.length).keys());
     let pointIdx: number = 0;
+    let traceIndexes: number[] = new Array(traceArr.length);
+    traceIndexes.fill(0);
 
-    //Timer to plotting new points on replay
+
+
     let replayInterval = setInterval(() => {
       let cont: boolean = false;
       for (let traceIdx in traceArr) {
-        if (pointIdx < replayData[traceIdx]['x'].length) {
+        if (traceIndexes[traceIdx] < replayData[traceIdx]['x'].length) {
           cont = true;
           break;
         }
@@ -65,17 +77,30 @@ export class PlotlyComponent{
         nextData['x'].push([]);
         nextData['y'].push([]);
       }
+      //
       //Get next items from replayData
+      //First, find next smallest X item
+      let minX = null;
       for (let traceIdx in traceArr) {
-        if (pointIdx < replayData[traceIdx]['x'].length) {
-          nextData['x'][traceIdx].push(replayData[traceIdx]['x'][pointIdx]);
-          nextData['y'][traceIdx].push(replayData[traceIdx]['y'][pointIdx]);
+        if (minX == null || minX > replayData[traceIdx]['x'][traceIndexes[traceIdx]]) {
+          minX = replayData[traceIdx]['x'][traceIndexes[traceIdx]];
         }
       }
-      Plotly.extendTraces('myPlotlyDiv', nextData, traceArr);
+      //Then, push all items with X values = smallest X
+      for (let traceIdx in traceArr) {
+        if (traceIndexes[traceIdx] < replayData[traceIdx]['x'].length) {    //trace traceIdx still have items to plot
+          if (replayData[traceIdx]['x'][traceIndexes[traceIdx]] == minX) {  //trace traceIdx item at traceIndexes[traceIdx] has X = minX
+            nextData['x'][traceIdx].push(replayData[traceIdx]['x'][traceIndexes[traceIdx]]);
+            nextData['y'][traceIdx].push(replayData[traceIdx]['y'][traceIndexes[traceIdx]]);
+            traceIndexes[traceIdx] += 1;
+          }
+        }
+      }
+
+      Plotly.extendTraces(this.plotId, nextData, traceArr);
       //ExtendTraces(newPlotlyData, [0,1,2]);
       pointIdx++;
-    }, 200);
+    }, 1);
   }
 
   //Deep cloning an array
