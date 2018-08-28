@@ -124,23 +124,34 @@ export class PowerComponent implements OnInit, OnDestroy {
     this.PlotlyData = [ baselineTrace, targetTrace, powerTrace ];
     
     //Initial get
-    this._powerDataService.GetAllBaseline(this.viewDate)
+    if (this.viewDate.indexOf('2017') >= 0) {
+      this._powerDataService.GetAllBaseline(this.viewDate)
       .subscribe(
         data => this.setNewData(data, 0),
         error => console.log(error.json().error),
         () => console.log('Get GetAllBaseline completed.'));
 
-    // this._powerDataService.GetAllTarget(this.viewDate)
-    //   .subscribe(
-    //     data => this.setNewData(data, 1),
-    //     error => console.log(error.json().error),
-    //     () => console.log('Get GetAllTarget completed.'));
+      this._powerDataService.GetAllTarget(this.viewDate)
+        .subscribe(
+          data => this.setNewData(data, 1),
+          error => console.log(error.json().error),
+          () => console.log('Get GetAllTarget completed.'));
 
-    this._powerDataService.GetAllPower(this.viewDate, this.func)
+      this._powerDataService.GetAllPower(this.viewDate, this.func)
       .subscribe(
         data => this.setNewData(data, 2),
         error => console.log(error.json().error),
         () => console.log('Get GetAllPower completed.'));
+    }
+    else {
+      this._powerDataService.GetAllPowerAug(this.viewDate, this.func)
+      .subscribe(
+        data => this.setNewData(data, 10),
+        error => console.log(error.json().error),
+        () => console.log('Get GetAllPower completed.'));
+    }
+    
+    
 
     //Timer to pull new dasta
     // this.timer
@@ -179,17 +190,16 @@ export class PowerComponent implements OnInit, OnDestroy {
     let curDateTime = new Date;
     
     for (let d of data) {
-      if (traceIdx == 0) {
-        // Baseline
-        newPlotlyData['x'][0].push(d['ts']);
-        newPlotlyData['y'][0].push(d['value']);
+      if (traceIdx == 10) {
+        // Actual
+        newPlotlyData['x'][2].push(d['ts']);
+        newPlotlyData['y'][2].push(d['value']);
 
         // Target
         newPlotlyData['x'][1].push(d['ts']);
         newPlotlyData['y'][1].push(d['target']);
       }
-      else if (traceIdx == 2) {
-        // Actual
+      else if (traceIdx != 1) {
         newPlotlyData['x'][traceIdx].push(d['ts']);
         newPlotlyData['y'][traceIdx].push(d['value']);
       }

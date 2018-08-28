@@ -18,6 +18,7 @@ export class PowerDataService {
   private allBaselineEndPoint: string = '1';
   private allTargetEndPoint: string = '2';
   private allPowerEndPoint: string = '3';
+  private allPowerEndPointAug: string = '10';
   private allPowerWithoutILCEndPoint: string = '4';
   private allPowerWithILCEndPoint: string = '5';
   private token: string;
@@ -73,6 +74,13 @@ export class PowerDataService {
   public GetAllPower = (viewDate, func): Observable<Response> => {
     console.log('Get GetAllPower starting...');
     return this._http.get(`${this.actionUrl}/${this.allPowerEndPoint}?date=${viewDate}&func=${func}`, { 
+      //headers: this.headers 
+    }).timeout(30000).map(res => res.json()).catch(this.handleErrorObservable);
+  }
+
+  public GetAllPowerAug = (viewDate, func): Observable<Response> => {
+    console.log('Get GetAllPower starting...');
+    return this._http.get(`${this.actionUrl}/${this.allPowerEndPointAug}?date=${viewDate}&func=${func}`, { 
       //headers: this.headers 
     }).timeout(30000).map(res => res.json()).catch(this.handleErrorObservable);
   }

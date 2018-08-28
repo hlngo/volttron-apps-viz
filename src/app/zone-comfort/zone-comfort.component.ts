@@ -58,83 +58,103 @@ export class ZoneComfortComponent implements OnInit, OnDestroy {
       },
       yaxis: {
           title: 'Temperature (F)',
-          range: [65, 80]
+          range: [50, 110]
       },
       annotations: [
-        {
-          text: 'High Limit',
-          xref: 'paper',
-          x: 0.99,
-          y: 78,
-          yshift: 10,
-          showarrow: false
-        },
-        {
-          text: 'Low Limit',
-          xref: 'paper',
-          x: 0.99,
-          y: 68,
-          yshift: -10,
-          showarrow: false
-        }
+        // {
+        //   text: 'High Limit',
+        //   xref: 'paper',
+        //   x: 0.99,
+        //   y: 78,
+        //   yshift: 10,
+        //   showarrow: false
+        // },
+        // {
+        //   text: 'Low Limit',
+        //   xref: 'paper',
+        //   x: 0.99,
+        //   y: 68,
+        //   yshift: -10,
+        //   showarrow: false
+        // }
       ],
       shapes: [
-        //High limit
-        {
-          type: 'line',
-          'xref': 'paper',
-          'x0': 0,
-          'y0': 78,
-          'x1': 1,
-          'y1': 78,
-          'line': {
-            color: 'red',
-            width: 2
-          }
-        },
-        //Low limit
-        {
-          type: 'line',
-          'xref': 'paper',
-          'x0': 0,
-          'y0': 68,
-          'x1': 1,
-          'y1': 68,
-          'line': {
-            color: 'red',
-            width: 2.5
-          }
-        }
+        // //High limit
+        // {
+        //   type: 'line',
+        //   'xref': 'paper',
+        //   'x0': 0,
+        //   'y0': 78,
+        //   'x1': 1,
+        //   'y1': 78,
+        //   'line': {
+        //     color: 'red',
+        //     width: 2
+        //   }
+        // },
+        // //Low limit
+        // {
+        //   type: 'line',
+        //   'xref': 'paper',
+        //   'x0': 0,
+        //   'y0': 68,
+        //   'x1': 1,
+        //   'y1': 68,
+        //   'line': {
+        //     color: 'red',
+        //     width: 2.5
+        //   }
+        // }
       ]
     };
 
+    // this.PlotlyData = [];
+    // for (let equip of this.equips) {
+    //   for (let point of this.points) {
+    //     this.PlotlyData.push({
+    //       name: `${equip} ${this.pointLabels[point]}`,
+    //       x: [], 
+    //       y: [],
+    //       mode: 'lines'
+    //     });
+    //   }
+    // }
+    //Hardcoded for control day
     this.PlotlyData = [];
-    for (let equip of this.equips) {
-      for (let point of this.points) {
-        this.PlotlyData.push({
-          name: `${equip} ${this.pointLabels[point]}`,
-          x: [], 
-          y: [],
-          mode: 'lines'
-        });
-      }
-    }
+    this.PlotlyData.push({
+      name: `Outdoor Temperature`,
+      x: [], 
+      y: [],
+      mode: 'lines'
+    });
     
     //Initial get
     let idx: number = 0;
-    for (let equip of this.equips) {
-      for (let point of this.points) {
-        let curIdx = idx; //create local scope variable to use with call-back
-        idx++;
-        this._zoneDataService.GetZoneData(this.site, this.building, equip, point, this.viewDate)
-          .subscribe(
-            data => {
-              this.setNewData(data, this.site, this.building, equip, point, curIdx);
-            },
-            error => console.log(error.json().error),
-            () => console.log(`Get ${this.site}/${this.building}/${equip}/${point} completed.`));
-      }
-    }  
+    // for (let equip of this.equips) {
+    //   for (let point of this.points) {
+    //     let curIdx = idx; //create local scope variable to use with call-back
+    //     idx++;
+    //     this._zoneDataService.GetZoneData(this.site, this.building, equip, point, this.viewDate)
+    //       .subscribe(
+    //         data => {
+    //           this.setNewData(data, this.site, this.building, equip, point, curIdx);
+    //         },
+    //         error => console.log(error.json().error),
+    //         () => console.log(`Get ${this.site}/${this.building}/${equip}/${point} completed.`));
+    //   }
+    // }
+    //Hard coded for control day
+    let equip = '';
+    let point = '';
+    if (this.viewDate.indexOf('2017') < 0) {
+      this._zoneDataService.GetZoneData(this.site, this.building, equip, point, this.viewDate)
+        .subscribe(
+          data => {
+            this.setNewData(data, this.site, this.building, equip, point, 0);
+          },
+          error => console.log(error.json().error),
+          () => console.log(`Get ${this.site}/${this.building}/${equip}/${point} completed.`));
+    }
   }//ngOnInit
 
   private setNewData(data, site, building, equip, point, traceIdx: number ): any {
